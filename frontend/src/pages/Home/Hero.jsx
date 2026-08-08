@@ -1,4 +1,7 @@
 import "./Hero.css";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { BACKEND_URL } from "../../config/api";
 import { ArrowRight } from "lucide-react";
 import {
   PiLeafLight,
@@ -7,8 +10,55 @@ import {
 } from "react-icons/pi";
 
 function Hero() {
+  const [heroImage, setHeroImage] = useState("");
+const [heroLoading, setHeroLoading] = useState(true);
+
+useEffect(() => {
+  const fetchHero = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/hero`);
+
+      if (res.data?.success && res.data?.hero?.imageUrl) {
+        setHeroImage(res.data.hero.imageUrl);
+      }
+    } catch (error) {
+      console.error("Failed to load hero image:", error);
+    } finally {
+      setHeroLoading(false);
+    }
+  };
+
+  fetchHero();
+}, []);
+const [heroImage, setHeroImage] = useState("");
+const [heroLoading, setHeroLoading] = useState(true);
+
+useEffect(() => {
+  const fetchHero = async () => {
+    try {
+      const res = await axios.get(`${BACKEND_URL}/api/hero`);
+
+      if (res.data?.success && res.data?.hero?.imageUrl) {
+        setHeroImage(res.data.hero.imageUrl);
+      }
+    } catch (error) {
+      console.error("Failed to load hero image:", error);
+    } finally {
+      setHeroLoading(false);
+    }
+  };
+  fetchHero();
+}, []);
+
   return (
-    <section className="hero">
+    <section
+  className="hero"
+  style={
+    heroImage
+      ? { backgroundImage: `url(${heroImage})` }
+      : undefined
+  }
+>
       <div className="hero-overlay">
 
         {/* Top Badge */}

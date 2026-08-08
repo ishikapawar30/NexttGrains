@@ -80,9 +80,9 @@ icon:<Newspaper size={22}/>
 },
 
 {
-title:"CMS",
-path:"/admin/cms",
-icon:<FileText size={22}/>
+  title: "Website Content",
+  path: "/admin/website-content",
+  icon: <LayoutDashboard size={22} />,
 },
 
 

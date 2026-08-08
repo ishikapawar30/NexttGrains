@@ -21,6 +21,7 @@ import FinanceManagement from "./pages/Admin/FinanceManagement";
 import Report from "./pages/Admin/Report";
 import ProductManagement from "./pages/Admin/ProductManagement";
 import VendorManagement from "./pages/Admin/VendorManagement";
+import WebsiteContent from "./pages/Admin/WebsiteContent";
 
 /* ================= VENDOR ================= */
 import VendorSidebar from "./components/Vendor/VendorSidebar";
@@ -135,6 +136,19 @@ element={<Navigate to="/admin/customers" replace />}
     </AdminProtectedRoute>
   }
 />
+
+<Route
+  path="/admin/website-content"
+  element={
+    <AdminProtectedRoute>
+      <AdminSidebar />
+      <AdminNavbar />
+
+      <WebsiteContent />
+    </AdminProtectedRoute>
+  }
+/>
+
 <Route
   path="/admin/finance"
   element={
