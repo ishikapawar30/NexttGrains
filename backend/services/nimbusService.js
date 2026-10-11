@@ -1,102 +1,153 @@
 import nimbusAPI, {
-
     NIMBUS_API_KEY,
     NIMBUS_API_SECRET,
-    NIMBUS_EMAIL
-
+    NIMBUS_EMAIL,
 } from "../config/nimbus.js";
 
-/* ==========================================================
-   GET ACCESS TOKEN
-========================================================== */
+
+/* =========================================================
+   ERROR HELPER
+========================================================= */
+
+const getNimbusError = (error) => {
+
+    const data =
+        error?.response?.data;
+
+    if (typeof data === "string") {
+        return data;
+    }
+
+    return (
+        data?.message ||
+        data?.error ||
+        data?.errors ||
+        error?.message ||
+        "NimbusPost request failed."
+    );
+};
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 export const getNimbusAccessToken = async () => {
 
-    try {
+    if (
+        !NIMBUS_EMAIL ||
+        !NIMBUS_API_KEY ||
+        !NIMBUS_API_SECRET
+    ) {
 
-        const { data } = await nimbusAPI.post(
-
-            "/v1/auth/login",
-
-            {
-
-                email: NIMBUS_EMAIL,
-
-                api_key: NIMBUS_API_KEY,
-
-                api_secret: NIMBUS_API_SECRET
-
-            }
-
+        throw new Error(
+            "NimbusPost credentials are missing in backend .env"
         );
 
-        if (!data?.data?.token) {
+    }
+
+
+    try {
+
+        const { data } =
+            await nimbusAPI.post(
+
+                "/v1/auth/login",
+
+                {
+                    email: NIMBUS_EMAIL,
+
+                    api_key:
+                        NIMBUS_API_KEY,
+
+                    api_secret:
+                        NIMBUS_API_SECRET,
+                }
+
+            );
+
+
+        const token =
+            data?.data?.token ||
+            data?.token ||
+            data?.access_token;
+
+
+        if (!token) {
+
+            console.log(
+                "Nimbus login response:",
+                JSON.stringify(
+                    data,
+                    null,
+                    2
+                )
+            );
 
             throw new Error(
-                "Nimbus access token not received."
+                "Nimbus access token was not received."
             );
 
         }
 
-        return data.data.token;
+
+        return token;
 
     }
 
     catch (error) {
 
-        console.log("========== NIMBUS LOGIN ==========");
-
         console.log(
-
-            error.response?.data ||
-
-            error.message
-
+            "========== NIMBUS LOGIN =========="
         );
 
-        console.log("==================================");
+        console.log(
+            error?.response?.data ||
+            error?.message
+        );
 
-        throw error;
+        console.log(
+            "=================================="
+        );
+
+        throw new Error(
+            getNimbusError(error)
+        );
 
     }
 
 };
 
-/* ==========================================================
+
+/* =========================================================
    CREATE SHIPMENT
-========================================================== */
+========================================================= */
 
-export const createNimbusShipment = async (
-
-    shipmentData
-
-) => {
+export const createNimbusShipment =
+async (payload) => {
 
     try {
 
         const token =
-
             await getNimbusAccessToken();
 
-        const { data } = await nimbusAPI.post(
 
-            "/v1/shipments",
+        const { data } =
+            await nimbusAPI.post(
 
-            shipmentData,
+                "/v1/shipments",
 
-            {
+                payload,
 
-                headers: {
-
-                    Authorization:
-
-                        `Bearer ${token}`
-
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`,
+                    },
                 }
 
-            }
+            );
 
-        );
 
         return data;
 
@@ -104,17 +155,22 @@ export const createNimbusShipment = async (
 
     catch (error) {
 
-        console.log("========== CREATE SHIPMENT ==========");
-
         console.log(
-
-            error.response?.data ||
-
-            error.message
-
+            "======= NIMBUS CREATE SHIPMENT ======="
         );
 
-        console.log("=====================================");
+        console.log(
+            JSON.stringify(
+                error?.response?.data ||
+                error?.message,
+                null,
+                2
+            )
+        );
+
+        console.log(
+            "======================================"
+        );
 
         throw error;
 
@@ -122,39 +178,36 @@ export const createNimbusShipment = async (
 
 };
 
-/* ==========================================================
-   TRACK SHIPMENT
-========================================================== */
 
-export const trackShipment = async (
+/* =========================================================
+   TRACK
+========================================================= */
 
-    awbNumber
-
-) => {
+export const trackShipment =
+async (awbNumber) => {
 
     try {
 
         const token =
-
             await getNimbusAccessToken();
 
-        const { data } = await nimbusAPI.get(
 
-            `/v1/shipments/track/${awbNumber}`,
+        const { data } =
+            await nimbusAPI.get(
 
-            {
+                `/v1/shipments/track/${encodeURIComponent(
+                    awbNumber
+                )}`,
 
-                headers: {
-
-                    Authorization:
-
-                        `Bearer ${token}`
-
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`,
+                    },
                 }
 
-            }
+            );
 
-        );
 
         return data;
 
@@ -162,17 +215,18 @@ export const trackShipment = async (
 
     catch (error) {
 
-        console.log("========== TRACK SHIPMENT ==========");
-
         console.log(
-
-            error.response?.data ||
-
-            error.message
-
+            "======== NIMBUS TRACK ========"
         );
 
-        console.log("====================================");
+        console.log(
+            error?.response?.data ||
+            error?.message
+        );
+
+        console.log(
+            "=============================="
+        );
 
         throw error;
 
@@ -180,41 +234,38 @@ export const trackShipment = async (
 
 };
 
-/* ==========================================================
-   CANCEL SHIPMENT
-========================================================== */
 
-export const cancelShipment = async (
+/* =========================================================
+   CANCEL
+========================================================= */
 
-    shipmentId
-
-) => {
+export const cancelShipment =
+async (awbNumber) => {
 
     try {
 
         const token =
-
             await getNimbusAccessToken();
 
-        const { data } = await nimbusAPI.post(
 
-            `/v1/shipments/${shipmentId}/cancel`,
+        const { data } =
+            await nimbusAPI.post(
 
-            {},
+                "/v1/shipments/cancel",
 
-            {
+                {
+                    awb: awbNumber,
+                },
 
-                headers: {
-
-                    Authorization:
-
-                        `Bearer ${token}`
-
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`,
+                    },
                 }
 
-            }
+            );
 
-        );
 
         return data;
 
@@ -222,17 +273,18 @@ export const cancelShipment = async (
 
     catch (error) {
 
-        console.log("========== CANCEL SHIPMENT ==========");
-
         console.log(
-
-            error.response?.data ||
-
-            error.message
-
+            "======== NIMBUS CANCEL ========"
         );
 
-        console.log("=====================================");
+        console.log(
+            error?.response?.data ||
+            error?.message
+        );
+
+        console.log(
+            "==============================="
+        );
 
         throw error;
 
@@ -240,39 +292,36 @@ export const cancelShipment = async (
 
 };
 
-/* ==========================================================
-   DOWNLOAD LABEL
-========================================================== */
 
-export const generateShippingLabel = async (
+/* =========================================================
+   LABEL
+========================================================= */
 
-    shipmentId
-
-) => {
+export const generateShippingLabel =
+async (shipmentId) => {
 
     try {
 
         const token =
-
             await getNimbusAccessToken();
 
-        const { data } = await nimbusAPI.get(
 
-            `/v1/shipments/${shipmentId}/label`,
+        const { data } =
+            await nimbusAPI.post(
 
-            {
+                "/v1/shipments/label",
 
-                headers: {
+                [shipmentId],
 
-                    Authorization:
-
-                        `Bearer ${token}`
-
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`,
+                    },
                 }
 
-            }
+            );
 
-        );
 
         return data;
 
@@ -280,17 +329,18 @@ export const generateShippingLabel = async (
 
     catch (error) {
 
-        console.log("========== SHIPPING LABEL ==========");
-
         console.log(
-
-            error.response?.data ||
-
-            error.message
-
+            "========= NIMBUS LABEL ========="
         );
 
-        console.log("====================================");
+        console.log(
+            error?.response?.data ||
+            error?.message
+        );
+
+        console.log(
+            "================================"
+        );
 
         throw error;
 
@@ -298,39 +348,40 @@ export const generateShippingLabel = async (
 
 };
 
-/* ==========================================================
+
+/* =========================================================
    MANIFEST
-========================================================== */
+========================================================= */
 
-export const generateManifest = async (
-
-    shipmentId
-
-) => {
+export const generateManifest =
+async (awbNumber) => {
 
     try {
 
         const token =
-
             await getNimbusAccessToken();
 
-        const { data } = await nimbusAPI.get(
 
-            `/v1/shipments/${shipmentId}/manifest`,
+        const { data } =
+            await nimbusAPI.post(
 
-            {
+                "/v1/shipments/manifest",
 
-                headers: {
+                {
+                    awbs: [
+                        awbNumber
+                    ],
+                },
 
-                    Authorization:
-
-                        `Bearer ${token}`
-
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`,
+                    },
                 }
 
-            }
+            );
 
-        );
 
         return data;
 
@@ -338,17 +389,18 @@ export const generateManifest = async (
 
     catch (error) {
 
-        console.log("========== MANIFEST ==========");
-
         console.log(
-
-            error.response?.data ||
-
-            error.message
-
+            "======== NIMBUS MANIFEST ========"
         );
 
-        console.log("==============================");
+        console.log(
+            error?.response?.data ||
+            error?.message
+        );
+
+        console.log(
+            "================================="
+        );
 
         throw error;
 

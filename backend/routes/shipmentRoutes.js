@@ -1,91 +1,84 @@
 import express from "express";
 
 import {
-
+    testNimbusConnection,
     createShipment,
-
     getShipmentTracking,
-
     cancelShipmentController,
-
     downloadLabel,
-
-    downloadManifestController
-
+    downloadManifestController,
 } from "../controllers/shipmentController.js";
 
 import authMiddleware from "../middleware/authMiddleware.js";
 
+
 const router = express.Router();
 
-/* ==========================================================
+
+/* =========================================================
+   TEST NIMBUS CONNECTION
+========================================================= */
+
+router.get(
+    "/test",
+    authMiddleware,
+    testNimbusConnection
+);
+
+
+/* =========================================================
    CREATE SHIPMENT
-========================================================== */
+========================================================= */
 
 router.post(
-
     "/create/:orderId",
-
     authMiddleware,
-
     createShipment
-
 );
 
-/* ==========================================================
-   TRACK SHIPMENT
-========================================================== */
+
+/* =========================================================
+   TRACK BY AWB
+========================================================= */
 
 router.get(
-
     "/track/:awb",
-
     authMiddleware,
-
     getShipmentTracking
-
 );
 
-/* ==========================================================
-   CANCEL SHIPMENT
-========================================================== */
+
+/* =========================================================
+   CANCEL BY OUR ORDER ID
+========================================================= */
 
 router.put(
-
-    "/cancel/:shipmentId",
-
+    "/cancel/:orderId",
     authMiddleware,
-
     cancelShipmentController
-
 );
 
-/* ==========================================================
-   SHIPPING LABEL
-========================================================== */
+
+/* =========================================================
+   LABEL BY OUR ORDER ID
+========================================================= */
 
 router.get(
-
-    "/label/:shipmentId",
-
+    "/label/:orderId",
     authMiddleware,
-
     downloadLabel
-
 );
 
-/* ==========================================================
-   MANIFEST
-========================================================== */
+
+/* =========================================================
+   MANIFEST BY OUR ORDER ID
+========================================================= */
 
 router.get(
-
-    "/manifest/:shipmentId",
-
+    "/manifest/:orderId",
     authMiddleware,
-
     downloadManifestController
-
 );
+
 
 export default router;

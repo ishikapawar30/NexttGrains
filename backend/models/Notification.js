@@ -2,9 +2,46 @@ import mongoose from "mongoose";
 
 const notificationSchema = new mongoose.Schema(
   {
-    user: {
+    recipientType: {
+      type: String,
+      enum: ["admin", "customer", "vendor"],
+      required: true,
+      index: true,
+    },
+
+    recipientId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      default: null,
+      index: true,
+    },
+
+    type: {
+      type: String,
+      enum: [
+        "CUSTOMER_REGISTERED",
+        "VENDOR_REGISTERED",
+        "VENDOR_APPROVED",
+
+        "PRODUCT_ADDED",
+        "PRODUCT_UPDATED",
+
+        "ORDER_PLACED",
+        "ORDER_CONFIRMED",
+        "ORDER_CANCELLED",
+
+        "PAYMENT_SUCCESS",
+        "PAYMENT_FAILED",
+        "PAYMENT_REFUNDED",
+
+        "ORDER_PACKED",
+        "ORDER_SHIPPED",
+        "ORDER_DELIVERED",
+
+        "LOW_STOCK",
+
+        "SYSTEM",
+      ],
       required: true,
       index: true,
     },
@@ -21,27 +58,54 @@ const notificationSchema = new mongoose.Schema(
       trim: true,
     },
 
-    type: {
+    entityType: {
       type: String,
       enum: [
-        "Order",
-        "Payment",
-        "Offer",
-        "Account",
-        "Product",
-        "System",
+        "user",
+        "vendor",
+        "product",
+        "order",
+        "payment",
+        "shipment",
+        "system",
       ],
-      default: "System",
+      default: "system",
     },
 
-    referenceId: {
+    entityId: {
       type: mongoose.Schema.Types.ObjectId,
       default: null,
+    },
+
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
 
     isRead: {
       type: Boolean,
       default: false,
+      index: true,
+    },
+
+    readAt: {
+      type: Date,
+      default: null,
+    },
+
+    emailSent: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailSentAt: {
+      type: Date,
+      default: null,
+    },
+
+    emailError: {
+      type: String,
+      default: null,
     },
   },
   {
@@ -49,4 +113,19 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Notification", notificationSchema);
+notificationSchema.index({
+  recipientType: 1,
+  createdAt: -1,
+});
+
+notificationSchema.index({
+  recipientType: 1,
+  isRead: 1,
+  createdAt: -1,
+});
+
+const Notification =
+  mongoose.models.Notification ||
+  mongoose.model("Notification", notificationSchema);
+
+export default Notification;

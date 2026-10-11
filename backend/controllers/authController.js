@@ -1,7 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
+import { createNotification } from "../services/notificationService.js";
 
 // =======================
 // Generate JWT Token
@@ -768,3 +768,27 @@ message:err.message
 }
 
 };
+
+
+await createNotification({
+
+  recipientType: "admin",
+
+  type: "CUSTOMER_REGISTERED",
+
+  title: "New customer registered",
+
+  message:
+    `${user.name || "A new customer"} has registered on NextTGrains.`,
+
+  entityType: "user",
+
+  entityId: user._id,
+
+  metadata: {
+    customerId: user._id,
+    name: user.name,
+    email: user.email,
+  },
+
+});

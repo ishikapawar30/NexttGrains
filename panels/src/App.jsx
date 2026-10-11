@@ -21,6 +21,7 @@ import FinanceManagement from "./pages/Admin/FinanceManagement";
 import Report from "./pages/Admin/Report";
 import ProductManagement from "./pages/Admin/ProductManagement";
 import VendorManagement from "./pages/Admin/VendorManagement";
+import AdminNotification from "./pages/Admin/AdminNotification";
 
 /* ================= VENDOR ================= */
 import VendorSidebar from "./components/Vendor/VendorSidebar";
@@ -184,6 +185,24 @@ element={<Navigate to="/admin/customers" replace />}
     </AdminProtectedRoute>
   }
 />
+
+<Route
+  path="/admin/notifications"
+  element={
+    <AdminProtectedRoute>
+    <div className="ngAdminLayout">
+      <AdminSidebar />
+      <div className="ngAdminRight">
+        <AdminNavbar />
+        <div className="ngAdminMainContent">
+          <AdminNotification />
+        </div>
+      </div>
+    </div>
+    </AdminProtectedRoute>
+  }
+/>
+
 
 {/* VENDOR  */}
 {/* ================= VENDOR AUTH ================= */}
